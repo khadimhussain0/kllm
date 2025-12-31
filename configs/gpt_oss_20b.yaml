@@ -1,0 +1,90 @@
+# GPT-OSS-20B Fine-Tuning Configuration
+# OpenAI's open-source reasoning model
+# Optimized for RTX 5090 (32GB VRAM)
+
+model:
+  name: "openai/gpt-oss-20b"
+  max_seq_length: 8192
+  dtype: "bfloat16"
+  load_in_4bit: true
+  # GPT-OSS uses MXFP4 format - Unsloth handles this natively
+
+lora:
+  r: 32
+  lora_alpha: 64
+  lora_dropout: 0.05
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+  bias: "none"
+  use_gradient_checkpointing: "unsloth"
+
+training:
+  output_dir: "./models/gpt-oss-20b-finetuned"
+  num_train_epochs: 3
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 16
+  learning_rate: 1.0e-4
+  lr_scheduler_type: "cosine"
+  warmup_ratio: 0.05
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+
+  # Logging
+  logging_steps: 10
+  save_steps: 50
+  save_total_limit: 3
+
+  # Evaluation
+  eval_strategy: "steps"
+  eval_steps: 50
+
+  # Optimization
+  optim: "adamw_8bit"
+  fp16: false
+  bf16: true
+
+  # Run name
+  run_name: "gpt-oss-20b-reasoning-finetune"
+
+data:
+  train_file: "./data/train.jsonl"
+  eval_file: "./data/eval.jsonl"
+  dataset_text_field: "text"
+  max_length: 8192
+  packing: false  # Disable packing for reasoning - important for CoT
+
+# GPT-OSS specific settings
+reasoning:
+  # Keep 75% reasoning / 25% non-reasoning ratio for best results
+  preserve_cot: true
+  mask_intermediate_cot: true
+  final_turn_only: true
+
+# Weights & Biases configuration
+wandb:
+  project: "kllm"
+  entity: null
+  tags:
+    - "gpt-oss"
+    - "20b"
+    - "reasoning"
+    - "qlora"
+
+# HuggingFace Hub configuration
+hub:
+  push_to_hub: false
+  repo_id: null  # e.g., "your-username/gpt-oss-20b-reasoning"
+  private: false
+
+# Inference settings for evaluation
+inference:
+  max_new_tokens: 2048
+  temperature: 0.6
+  top_p: 0.95
+  do_sample: true

@@ -1,0 +1,81 @@
+# Qwen3-14B Fine-Tuning Configuration
+# Optimized for RTX 5090 (32GB VRAM)
+
+model:
+  name: "Qwen/Qwen3-14B"
+  max_seq_length: 4096
+  dtype: "float16"
+  load_in_4bit: true
+
+lora:
+  r: 32
+  lora_alpha: 64
+  lora_dropout: 0.05
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+  bias: "none"
+  use_gradient_checkpointing: "unsloth"
+
+training:
+  output_dir: "./models/qwen3-14b-finetuned"
+  num_train_epochs: 3
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 16
+  learning_rate: 2.0e-4
+  lr_scheduler_type: "cosine"
+  warmup_ratio: 0.05
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+
+  # Logging
+  logging_steps: 10
+  save_steps: 100
+  save_total_limit: 3
+
+  # Evaluation
+  eval_strategy: "steps"
+  eval_steps: 400
+
+  # Optimization
+  optim: "adamw_8bit"
+  fp16: false
+  bf16: true
+
+  # Run name
+  run_name: "qwen3-14b-finetune"
+
+data:
+  train_file: "./data/train.jsonl"
+  eval_file: "./data/eval.jsonl"
+  dataset_text_field: "text"
+  max_length: 4096
+  packing: true
+
+# Weights & Biases configuration
+wandb:
+  project: "kllm"
+  entity: null  # Your W&B username or team name
+  tags:
+    - "qwen3"
+    - "14b"
+    - "fine-tuning"
+    - "qlora"
+
+# HuggingFace Hub configuration
+hub:
+  push_to_hub: false  # Set to true to auto-push after training
+  repo_id: null  # e.g., "your-username/qwen3-14b-custom"
+  private: false
+
+# Inference settings for evaluation
+inference:
+  max_new_tokens: 512
+  temperature: 0.7
+  top_p: 0.9
+  do_sample: true
