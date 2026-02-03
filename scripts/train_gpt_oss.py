@@ -153,26 +153,28 @@ def main(
 
     # Configure trainer
     print("[4/5] Configuring trainer...")
+    training_config = config["training"]
     training_args = TrainingArguments(
-        output_dir=config["training"]["output_dir"],
-        num_train_epochs=config["training"]["num_train_epochs"],
-        per_device_train_batch_size=config["training"]["per_device_train_batch_size"],
-        gradient_accumulation_steps=config["training"]["gradient_accumulation_steps"],
-        learning_rate=config["training"]["learning_rate"],
-        lr_scheduler_type=config["training"]["lr_scheduler_type"],
-        warmup_ratio=config["training"]["warmup_ratio"],
-        weight_decay=config["training"]["weight_decay"],
-        max_grad_norm=config["training"]["max_grad_norm"],
-        logging_steps=config["training"]["logging_steps"],
-        save_steps=config["training"]["save_steps"],
-        save_total_limit=config["training"]["save_total_limit"],
-        eval_strategy=config["training"]["eval_strategy"],
-        eval_steps=config["training"]["eval_steps"],
-        optim=config["training"]["optim"],
-        fp16=config["training"]["fp16"],
-        bf16=config["training"]["bf16"],
-        report_to="wandb",
+        output_dir=training_config["output_dir"],
+        num_train_epochs=training_config["num_train_epochs"],
+        per_device_train_batch_size=training_config["per_device_train_batch_size"],
+        gradient_accumulation_steps=training_config["gradient_accumulation_steps"],
+        learning_rate=training_config["learning_rate"],
+        lr_scheduler_type=training_config["lr_scheduler_type"],
+        warmup_ratio=training_config["warmup_ratio"],
+        weight_decay=training_config["weight_decay"],
+        max_grad_norm=training_config["max_grad_norm"],
+        logging_steps=training_config["logging_steps"],
+        save_steps=training_config["save_steps"],
+        save_total_limit=training_config["save_total_limit"],
+        eval_strategy=training_config.get("eval_strategy", "no"),
+        eval_steps=training_config.get("eval_steps"),
+        optim=training_config["optim"],
+        fp16=training_config["fp16"],
+        bf16=training_config["bf16"],
+        report_to="none",
         run_name=run_name,
+        push_to_hub=False,
     )
 
     trainer = SFTTrainer(

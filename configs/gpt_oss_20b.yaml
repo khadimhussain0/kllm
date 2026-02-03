@@ -1,18 +1,16 @@
 # GPT-OSS-20B Fine-Tuning Configuration
 # OpenAI's open-source reasoning model
-# Optimized for RTX 5090 (32GB VRAM)
 
 model:
   name: "openai/gpt-oss-20b"
   max_seq_length: 8192
   dtype: "bfloat16"
   load_in_4bit: true
-  # GPT-OSS uses MXFP4 format - Unsloth handles this natively
 
 lora:
   r: 32
   lora_alpha: 64
-  lora_dropout: 0.05
+  lora_dropout: 0.0
   target_modules:
     - "q_proj"
     - "k_proj"
@@ -37,12 +35,12 @@ training:
 
   # Logging
   logging_steps: 10
-  save_steps: 50
-  save_total_limit: 3
+  save_strategy: "steps"
+  save_steps: 100
+  save_total_limit: 2
 
   # Evaluation
-  eval_strategy: "steps"
-  eval_steps: 50
+  eval_strategy: "epoch"
 
   # Optimization
   optim: "adamw_8bit"
@@ -57,16 +55,8 @@ data:
   eval_file: "./data/eval.jsonl"
   dataset_text_field: "text"
   max_length: 8192
-  packing: false  # Disable packing for reasoning - important for CoT
+  packing: false
 
-# GPT-OSS specific settings
-reasoning:
-  # Keep 75% reasoning / 25% non-reasoning ratio for best results
-  preserve_cot: true
-  mask_intermediate_cot: true
-  final_turn_only: true
-
-# Weights & Biases configuration
 wandb:
   project: "kllm"
   entity: null
@@ -76,13 +66,11 @@ wandb:
     - "reasoning"
     - "qlora"
 
-# HuggingFace Hub configuration
 hub:
   push_to_hub: false
-  repo_id: null  # e.g., "your-username/gpt-oss-20b-reasoning"
+  repo_id: null
   private: false
 
-# Inference settings for evaluation
 inference:
   max_new_tokens: 2048
   temperature: 0.6
