@@ -159,7 +159,7 @@ def main(
         bf16=training_config["bf16"],
         fp16_full_eval=training_config.get("fp16_full_eval", False),
         eval_accumulation_steps=training_config.get("eval_accumulation_steps"),
-        report_to="none",
+        report_to="wandb",
         run_name=run_name,
         push_to_hub=False,
     )

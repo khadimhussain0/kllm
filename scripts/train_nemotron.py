@@ -184,7 +184,7 @@ def main(
         optim=training_config["optim"],
         fp16=training_config["fp16"],
         bf16=training_config["bf16"],
-        report_to="none",
+        report_to="wandb",
         run_name=run_name,
         push_to_hub=False,
     )

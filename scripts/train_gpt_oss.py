@@ -7,6 +7,7 @@ from __future__ import annotations
 from unsloth import FastLanguageModel
 
 import os
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import wandb
@@ -66,7 +67,16 @@ def prepare_dataset(config: dict) -> dict[str, Dataset]:
 
 
 def format_reasoning_prompt(example: dict) -> dict:
-    """Format example with thinking tags for chain-of-thought."""
+    """Format example with thinking tags for chain-of-thought.
+
+    If the example already has a 'text' field (pre-formatted), use it directly.
+    Otherwise, format based on the available fields.
+    """
+    # Already formatted - use as-is
+    if "text" in example and example["text"]:
+        return example
+
+    # GSM8K format
     if "question" in example:
         question = example["question"]
         answer = example.get("answer", "")
@@ -80,6 +90,7 @@ def format_reasoning_prompt(example: dict) -> dict:
         )
         return {"text": text}
 
+    # Instruction format
     if "instruction" in example:
         instruction = example["instruction"]
         reasoning = example.get("reasoning", "")
@@ -172,7 +183,7 @@ def main(
         optim=training_config["optim"],
         fp16=training_config["fp16"],
         bf16=training_config["bf16"],
-        report_to="none",
+        report_to="wandb",
         run_name=run_name,
         push_to_hub=False,
     )

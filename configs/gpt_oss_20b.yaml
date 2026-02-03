@@ -3,7 +3,7 @@
 
 model:
   name: "openai/gpt-oss-20b"
-  max_seq_length: 8192
+  max_seq_length: 2048
   dtype: "bfloat16"
   load_in_4bit: true
 
@@ -51,10 +51,10 @@ training:
   run_name: "gpt-oss-20b-reasoning-finetune"
 
 data:
-  train_file: "./data/train.jsonl"
-  eval_file: "./data/eval.jsonl"
+  train_file: "./data/train_reasoning.jsonl"
+  eval_file: "./data/eval_reasoning.jsonl"
   dataset_text_field: "text"
-  max_length: 8192
+  max_length: 2048
   packing: false
 
 wandb:
