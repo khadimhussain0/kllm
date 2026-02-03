@@ -28,7 +28,7 @@ Fine-tune LLMs with LoRA/QLoRA on consumer hardware.
 ### Installation
 
 ```bash
-git clone https://github.com/yourusername/kllm.git
+git clone https://github.com/khadimhussain0/kllm.git
 cd kllm
 
 # Create virtual environment

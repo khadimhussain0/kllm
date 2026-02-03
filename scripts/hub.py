@@ -90,7 +90,7 @@ license: mit
 base_model: {base_model}
 tags:
 - fine-tuned
-- kllm
+- fine-tuned
 - {task}
 datasets:
 - {dataset}
@@ -99,7 +99,7 @@ pipeline_tag: {task}
 
 # {repo_id.split('/')[-1]}
 
-Fine-tuned from [{base_model}](https://huggingface.co/{base_model}) using [KLLM](https://github.com/yourusername/kllm).
+Fine-tuned from [{base_model}](https://huggingface.co/{base_model}).
 
 ## Usage
 

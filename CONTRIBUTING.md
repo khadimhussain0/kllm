@@ -3,7 +3,7 @@
 ## Development Setup
 
 ```bash
-git clone https://github.com/yourusername/kllm.git
+git clone https://github.com/khadimhussain0/kllm.git
 cd kllm
 
 uv venv .venv --python=3.12 --seed
