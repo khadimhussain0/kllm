@@ -178,3 +178,110 @@ Fix:
 ```bash
 sudo chown -R $(whoami):$(whoami) models/
 ```
+
+## GGUF Conversion with llama.cpp
+
+To convert fine-tuned models to GGUF format for use with Ollama, LM Studio, or llama.cpp.
+
+### 1. Clone llama.cpp
+
+```bash
+git clone https://github.com/ggerganov/llama.cpp ~/llama.cpp
+cd ~/llama.cpp
+```
+
+### 2. Install Python Dependencies
+
+```bash
+pip install -r requirements/requirements-convert_hf_to_gguf.txt
+```
+
+Or install manually:
+```bash
+pip install numpy~=1.26.4 sentencepiece~=0.2.0 transformers>=4.57.1 gguf>=0.1.0 protobuf>=4.21.0
+```
+
+### 3. (Optional) Build llama.cpp for Inference
+
+Only needed if you want to run models directly with llama.cpp:
+
+```bash
+cd ~/llama.cpp
+mkdir build && cd build
+cmake .. -DGGML_CUDA=ON  # Use -DGGML_CUDA=OFF for CPU-only
+make -j$(nproc)
+```
+
+### 4. Convert Model to GGUF
+
+```bash
+cd ~/llama.cpp
+python convert_hf_to_gguf.py /path/to/merged/model \
+    --outfile /path/to/output.gguf \
+    --outtype q8_0 \
+    --verbose
+```
+
+**Quantization options (`--outtype`):**
+| Type | Description | Size (20B model) |
+|------|-------------|------------------|
+| `f16` | 16-bit float (best quality) | ~40GB |
+| `q8_0` | 8-bit quantized | ~21GB |
+| `q4_k_m` | 4-bit quantized (recommended) | ~12GB |
+| `q5_k_m` | 5-bit quantized | ~14GB |
+
+### 5. Example: Convert GPT-OSS Fine-tuned Model
+
+```bash
+# Create output directory
+mkdir -p models/gpt-oss-gguf
+
+# Convert merged model to Q8_0 GGUF
+cd ~/llama.cpp
+python convert_hf_to_gguf.py /home/elunic/kllm/models/gpt-oss-20b-finetuned-merged \
+    --outfile /home/elunic/kllm/models/gpt-oss-gguf/gpt-oss-20b-finetuned-q8_0.gguf \
+    --outtype q8_0 \
+    --verbose
+```
+
+### 6. Use with Ollama
+
+Create a `Modelfile`:
+```bash
+cat > models/gpt-oss-gguf/Modelfile << 'EOF'
+FROM ./gpt-oss-20b-finetuned-q8_0.gguf
+
+TEMPLATE """<|start|>user<|message|>{{ .Prompt }}<|end|>
+<|start|>assistant<|channel|>final<|message|>"""
+
+PARAMETER stop "<|end|>"
+PARAMETER stop "<|return|>"
+PARAMETER temperature 0.7
+PARAMETER top_p 0.9
+PARAMETER num_ctx 4096
+EOF
+```
+
+Create and run the model:
+```bash
+cd models/gpt-oss-gguf
+ollama create my-gpt-oss -f Modelfile
+ollama run my-gpt-oss
+```
+
+### 7. Use with llama.cpp Directly
+
+```bash
+~/llama.cpp/build/bin/llama-cli \
+    -m models/gpt-oss-gguf/gpt-oss-20b-finetuned-q8_0.gguf \
+    -p "What is DNA?" \
+    -n 512 \
+    --temp 0.7
+```
+
+### Notes
+
+- **Merged model required**: Convert the merged model (with LoRA weights merged), not the LoRA adapter directory
+- **Conversion time**: ~3-5 minutes for a 20B model
+- **Disk space**: Ensure enough space for both the source model and GGUF output
+- **GPU not required**: Conversion runs on CPU
